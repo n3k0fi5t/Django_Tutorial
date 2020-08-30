@@ -19,5 +19,5 @@ def visit(request):
     rs.modified = True
 
     return render(request, 'base.html', {
-        'visit_count' : rs[ID]['visit_count'],
+        'visit_count' : data['visit_count'],
     })
