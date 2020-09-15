@@ -1,0 +1,5 @@
+#!/bin/bash
+
+DJANGO_HOST_PORT=5005
+DJANGO_PORT=8080
+
