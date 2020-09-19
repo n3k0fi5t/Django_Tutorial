@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>{{ picture.title }}</h3>
+
+{% if picture %}
+  <p><img src="{{ picture.image_url }}"/></p>
+{% endif %}
+
+<p>Upload Date: {{ picture.date | date:"Y-m-j" }} </p>
+<p><a href="{% url 'pic_upload:pic_list' %}">Show All Pictures</a> |
+    <a href="{% url 'pic_upload:pic_upload' %}">Upload New Picture</a></p>
+{% endblock %}
