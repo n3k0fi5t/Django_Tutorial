@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'home',
     'registration',
     'todo',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'TodoService.urls'
@@ -133,3 +135,16 @@ LOGIN_URL = '/register/login/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+DEBUG = True
+
+if DEBUG:
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        '0.0.0.0',
+    ]
+    import socket
+
+    # tricks to have debug toolbar when developing with docker
+    ip = socket.gethostbyname(socket.gethostname())
+    INTERNAL_IPS += [ip[:-1] + '1']
