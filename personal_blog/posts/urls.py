@@ -4,15 +4,15 @@ from .views import (
     PostDetailView,
     PostCreateView,
     PostDeleteView,
-    PostUpdateView
+    PostUpdateView,
 )
 
 APP_NAME = 'posts'
 
 urlpatterns = [
-    re_path(r'^list/$', PostListView.as_view()),
-    re_path(r'^detail/$', PostDetailView.as_view()),
-    re_path(r'^create/$', PostCreateView.as_view()),
-    re_path(r'^update/$', PostDeleteView.as_view()),
-    re_path(r'^delete$', PostUpdateView.as_view()),
+    re_path(r'^list/$', PostListView.as_view(), name='list'),
+    re_path(r'^create/$', PostCreateView.as_view(), name='create'),
+    re_path(r'^(?P<id>\d+)/edit/$', PostUpdateView.as_view(), name='edit'),
+    re_path(r'^(?P<id>\d+)/delete/$', PostDeleteView.as_view(), name='delete'),
+    re_path(r'^(?P<id>\d+)/$', PostDetailView.as_view(), name='detail'),
 ]
