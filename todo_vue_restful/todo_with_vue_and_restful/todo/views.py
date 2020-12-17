@@ -1,30 +1,71 @@
-import json
+from http import HTTPStatus
 
-from django.shortcuts import render
+from django.contrib.auth import logout
+from django.utils.decorators import method_decorator
 
-from rest_framework import generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from utils.api import APIView, validate_serializer
 
-from .models import Post
-from .serializers import PostSerializer
+from account.permissions import (
+    login_required,
+    check_object_permission
+)
+
+from .models import TodoItem
+from .serializers import EditTodoItemSerializer, TodoItemCreateSerializer, TodoItemSerializer
 
 # Create your views here.
-class PostsView(generics.RetrieveAPIView):
-    queryset = Post.objects.all()
-    permission_classes = [IsAuthenticated, ]
+class TodoItemListAPIView(APIView):
+    @login_required
+    def get(self, request):
+        user = request.user
 
-    def get(self, request, *args, **kwargs):
-        qs = self.get_queryset()
-        serializer = PostSerializer(qs, many=True)
-        return Response(serializer.data)
+        items = user.todoitem_set.all()
+        return self.success(
+            TodoItemSerializer(items, many=True).data
+        )
 
-    def post(self, request, *args, **kwargs):
-        data = json.loads(request.body.decode('utf-8'))
-        serializer = PostSerializer(data=data)
-        if serializer.is_valid():
-            obj = Post.objects.create(**serializer.validated_data)
-            return Response(serializer.validated_data)
-        else:
-            return Response(status=400)
+    @validate_serializer(TodoItemCreateSerializer)
+    @login_required
+    def post(self, request):
+        user = request.user
+        data = request.data
+
+        todo_item = TodoItem.objects.create(
+            user=user,
+            title=data.get('title'),
+            content=data.get('content', '')
+        )
+
+        return self.success(
+            TodoItemSerializer(todo_item).data
+        )
+
+class TodoItemAPIView(APIView):
+    @login_required
+    def dispatch(self, request, id, *args, **kwargs):
+        user = request.user
+        try:
+            todo_item = TodoItem.objects.select_related('user').get(id=id)
+            if not check_object_permission(todo_item, user):
+                return self.error(HTTPStatus.FORBIDDEN, err="permission deny")
+
+            return super().dispatch(request, todo_item)
+        except TodoItem.DoesNotExist:
+            return self.error(HTTPStatus.BAD_REQUEST, err="Todo item does not exist")
+
+    def get(self, request, todo_item):
+        return self.success(
+            TodoItemSerializer(todo_item).data
+        )
+
+    @validate_serializer(EditTodoItemSerializer)
+    def put(self, request, todo_item):
+        data = request.data
+
+        for k, v in data.items():
+            setattr(todo_item, k, v)
+
+        todo_item.save()
+        return self.success(
+            TodoItemSerializer(todo_item).data
+        )

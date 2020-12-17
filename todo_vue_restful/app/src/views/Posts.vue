@@ -31,7 +31,6 @@ import Navbar from '../components/Navabar'
 //import { getAPI } from '../axios-api'
 // import { getAPI } from '../axios-api'
 import api from '../axios-api'
-import { mapState } from 'vuex'
 export default {
     name: 'Posts',
     data () {

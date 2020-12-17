@@ -3,21 +3,18 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
-#from .models import TodoItem
-from .models import Post
-
-User = get_user_model()
+from .models import TodoItem
 
 class TodoItemCreateSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=30, required=False)
     title = serializers.CharField(max_length=50)
-    content = serializers.CharField(max_length=200)
-
-    def validate(self, data):
-        return data
+    content = serializers.CharField(required=False)
 
 
-class PostSerializer(serializers.ModelSerializer):
+class TodoItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Post
-        fields = '__all__'
+        model = TodoItem
+        fields = ['title', 'content', 'is_finished', 'finish_time', 'id']
+
+
+class EditTodoItemSerializer(TodoItemCreateSerializer):
+    is_finished = serializers.BooleanField(required=True)
