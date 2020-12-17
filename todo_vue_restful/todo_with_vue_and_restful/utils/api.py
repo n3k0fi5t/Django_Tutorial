@@ -7,6 +7,7 @@ from django.http import HttpResponse, QueryDict
 
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils.decorators import method_decorator
+from rest_framework import serializers
 
 #from rest_framework.views import APIView as _APIView
 from rest_framework.response import Response
@@ -45,6 +46,15 @@ class JsonResponse(object):
             content_type=cls.content_type,
             status=status)
         return resp
+
+
+class APIError(Exception):
+    def __init__(self, status, err="API error"):
+        self.status = status
+        self.err = err
+
+    def __str__(self):
+        return self.err
 
 class APIView(_APIView):
     request_parsers = (JsonParser(), URLEncodedParser())
@@ -115,6 +125,8 @@ class APIView(_APIView):
 
         try:
             return super().dispatch(request, *args, **kwargs)
+        except APIError as e:
+            return self.error(status=e.status, err=str(e))
         except Exception as e:
             return self.server_error(err=str(e))
 
@@ -134,3 +146,27 @@ def validate_serializer(serializer):
 
         return handle
     return validate
+
+def paginate_data(request, qs, serializer):
+    try:
+        limit = int(request.GET.get("limit", "10"))
+    except ValueError:
+        limit = 10
+    if limit < 0 or limit > 50:
+        limit = 10
+    
+    try:
+        offset = int(request.GET.get("offset", "0"))
+    except ValueError:
+        offset = 0
+    if offset < 0:
+        offset = 0
+
+    results = serializer(qs[offset:offset+limit], many=True).data
+    count = qs.count()
+
+    data = {
+        "results": results,
+        "count": count,
+    }
+    return data

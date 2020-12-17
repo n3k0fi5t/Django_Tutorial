@@ -10,14 +10,14 @@ class TodoItem(models.Model):
     content = models.TextField()
 
     create_time = models.DateTimeField(auto_now_add=True)
-    finish_time = models.DateTimeField(auto_now=True)
+    finish_time = models.DateTimeField()
     is_finished = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
 
     class Meta:
-        ordering = ['-create_time']
+        ordering = ['create_time']
         db_table = 'todo_item'
         indexes = [
             # this indexing cannot help for improving performance, just for test

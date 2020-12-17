@@ -16,5 +16,5 @@ class TodoItemSerializer(serializers.ModelSerializer):
         fields = ['title', 'content', 'is_finished', 'finish_time', 'id']
 
 
-class EditTodoItemSerializer(TodoItemCreateSerializer):
-    is_finished = serializers.BooleanField(required=True)
+class TodoItemEditSerializer(TodoItemCreateSerializer):
+    is_finished = serializers.BooleanField()

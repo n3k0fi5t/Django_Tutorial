@@ -1,9 +1,15 @@
 from http import HTTPStatus
+from datetime import datetime
 
 from django.contrib.auth import logout
 from django.utils.decorators import method_decorator
 
-from utils.api import APIView, validate_serializer
+from utils.api import (
+    APIView,
+    APIError,
+    validate_serializer,
+    paginate_data
+)
 
 from account.permissions import (
     login_required,
@@ -11,21 +17,31 @@ from account.permissions import (
 )
 
 from .models import TodoItem
-from .serializers import EditTodoItemSerializer, TodoItemCreateSerializer, TodoItemSerializer
+from .serializers import (
+    TodoItemSerializer,
+    TodoItemCreateSerializer, 
+    TodoItemEditSerializer, 
+)
 
 # Create your views here.
-class TodoItemListAPIView(APIView):
+class TodoItemAPIView(APIView):
     @login_required
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def get(self, request):
         user = request.user
+        item_id = request.GET.get('item_id')
+        if item_id:
+            item = self._get_user_item(request)
+            return self.success(TodoItemSerializer(item).data)
 
-        items = user.todoitem_set.all()
-        return self.success(
-            TodoItemSerializer(items, many=True).data
-        )
+        items = TodoItem.objects.filter(user=user)
+        data = paginate_data(request, items, TodoItemSerializer)
+
+        return self.success(data)
 
     @validate_serializer(TodoItemCreateSerializer)
-    @login_required
     def post(self, request):
         user = request.user
         data = request.data
@@ -37,39 +53,37 @@ class TodoItemListAPIView(APIView):
         )
 
         return self.success(
-            TodoItemSerializer(todo_item).data
+            TodoItemSerializer(todo_item).data,
+            status=HTTPStatus.CREATED
         )
 
-class TodoItemAPIView(APIView):
-    @login_required
-    def dispatch(self, request, id, *args, **kwargs):
-        user = request.user
-        try:
-            todo_item = TodoItem.objects.select_related('user').get(id=id)
-            if not check_object_permission(todo_item, user):
-                return self.error(HTTPStatus.FORBIDDEN, err="permission deny")
+    @validate_serializer(TodoItemEditSerializer)
+    def put(self, request):
+        item = self._get_user_item(request)
 
-            return super().dispatch(request, todo_item)
-        except TodoItem.DoesNotExist:
-            return self.error(HTTPStatus.BAD_REQUEST, err="Todo item does not exist")
+        data = request.data
+        for k, v in data.items():
+            setattr(item, k, v)
 
-    def get(self, request, todo_item):
-        return self.success(
-            TodoItemSerializer(todo_item).data
-        )
+        if data.get("is_finished"):
+            item.finish_time = datetime.now()
 
-    def delete(self, request, todo_item):
-        todo_item.delete()
+        item.save()
+        return self.success(TodoItemSerializer(item).data)
+
+    def delete(self, request):
+        item = self._get_user_item(request)
+        item.delete()
         return self.success("delete sucessfully")
 
-    @validate_serializer(EditTodoItemSerializer)
-    def put(self, request, todo_item):
-        data = request.data
+    def _get_user_item(self, request):
+        item_id = request.GET.get("item_id")
+        user = request.user
+        try:
+            todo_item = TodoItem.objects.select_related('user').get(id=item_id)
+            if not check_object_permission(todo_item, user):
+                raise APIError(HTTPStatus.FORBIDDEN, err="item is not allowed query by this user")
 
-        for k, v in data.items():
-            setattr(todo_item, k, v)
-
-        todo_item.save()
-        return self.success(
-            TodoItemSerializer(todo_item).data
-        )
+            return todo_item
+        except TodoItem.DoesNotExist:
+            raise APIError(HTTPStatus.BAD_REQUEST, err="Todo item does not exist")
