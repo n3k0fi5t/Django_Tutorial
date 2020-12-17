@@ -83,7 +83,7 @@ class APIView(_APIView):
 
     def invalid_serializer(self, serializer):
         key, error = self._extract_error(serializer.errors)
-        err = f"invalid-{key}"
+        err = f"invalid '{key}' : {error}"
 
         return self.error(HTTPStatus.BAD_REQUEST, err=err)
 

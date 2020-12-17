@@ -58,6 +58,10 @@ class TodoItemAPIView(APIView):
             TodoItemSerializer(todo_item).data
         )
 
+    def delete(self, request, todo_item):
+        todo_item.delete()
+        return self.success("delete sucessfully")
+
     @validate_serializer(EditTodoItemSerializer)
     def put(self, request, todo_item):
         data = request.data
