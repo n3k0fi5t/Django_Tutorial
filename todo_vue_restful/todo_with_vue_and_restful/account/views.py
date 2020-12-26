@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -15,7 +15,10 @@ from .serializers import (
     UserRegisterSerializer,
     UserProfileSerializer,
     EditUserProfileSerializer,
+    UsernameOrEmailCheckSerializer,
 )
+
+User = get_user_model()
 
 # Create your views here.
 class UserLoginAPIView(APIView):
@@ -97,3 +100,23 @@ class UserProfileAPIView(APIView):
         user_profile.save()
         return self.success(UserProfileSerializer(user_profile).data)
         
+
+class UsernameOrEmailCheck(APIView):
+    @validate_serializer(UsernameOrEmailCheckSerializer)
+    def post(self, request):
+        data = request.data
+        username = data.get('username', '').lower()
+        email = data.get('email', '').lower()
+
+        result = {
+            "username": False,
+            "email": False
+        }
+
+        if User.objects.filter(username=username).exists():
+            result['username'] = True
+
+        if User.objects.filter(email=email).exists():
+            result['email'] = True
+
+        return self.success(data=result)

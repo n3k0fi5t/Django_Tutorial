@@ -8,7 +8,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'last_login']
+        fields = ['id', 'username', 'email', 'last_login']
 
 class UserRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=32)
@@ -31,3 +31,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class EditUserProfileSerializer(serializers.Serializer):
     real_name = serializers.CharField(max_length=60, allow_null=True, required=False)
+
+
+class UsernameOrEmailCheckSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)

@@ -5,6 +5,7 @@ from .views import (
     UserLogoutAPIView,
     UserProfileAPIView,
     UserRegisterAPIView,
+    UsernameOrEmailCheck,
 )
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     re_path(r'^logout/$', UserLogoutAPIView.as_view()),
     re_path(r'^profile/$', UserProfileAPIView.as_view()),
     re_path(r'^register/$', UserRegisterAPIView.as_view()),
+    re_path(r'^check_username_or_email/$', UsernameOrEmailCheck.as_view()),
 ]

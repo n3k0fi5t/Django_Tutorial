@@ -80,7 +80,7 @@ class APIView(_APIView):
         return self._response(resp_data)
 
     def server_error(self, err="server error"):
-            return self.error(HTTPStatus.INTERNAL_SERVER_ERROR, err=err)
+        return self.error(HTTPStatus.INTERNAL_SERVER_ERROR, err=err)
 
     def _extract_error(self, errors, key=""):
         if isinstance(errors, dict):
@@ -137,6 +137,7 @@ def validate_serializer(serializer):
         def handle(*args, **kwargs):
             self = args[0]
             request = args[1]
+
             s = serializer(data=request.data)
             if s.is_valid():
                 request.data = s.validated_data
