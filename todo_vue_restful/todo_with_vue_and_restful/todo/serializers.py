@@ -13,8 +13,10 @@ class TodoItemCreateSerializer(serializers.Serializer):
 class TodoItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = TodoItem
-        fields = ['title', 'content', 'is_finished', 'finish_time', 'id']
+        fields = ['title', 'content', 'is_finished', 'create_time', 'id']
 
 
-class TodoItemEditSerializer(TodoItemCreateSerializer):
+class TodoItemEditSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=50, required=False)
+    content = serializers.CharField(required=False)
     is_finished = serializers.BooleanField()

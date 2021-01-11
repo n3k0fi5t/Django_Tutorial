@@ -1,85 +1,88 @@
 <template>
     <div>
-        <div class="container text-dark">
-            <div class="row justify-content-md-center">
-                <div class="col-md-5 p-3 login justify-content-md-center">
-                    <h1 class="h3 mb-3 font-weight-normal text-center">Please sign in</h1>
-                    <p v-if="incorrectAuth">Incorrect username or password, please try again</p>
-                    <form v-on:submit.prevent="login">
-                        <div class="form-group">
-                            <input type="text" name="username" id="user" v-model="username" class="form-control" placeholder="Username">
-                        </div>
-                        <div class="form-group">
-                            <input type="password" name="password" id="pass" v-model="password" class="form-control" placeholder="Password">
-                        </div>
-                        <button type="submit" class="btn btn-lg btn-primary btn-block">Login</button>
-                    </form>
-                </div>
-            </div>
+        <Form ref="formLogin" :model="formData" :rules="ruleLogin">
+            <FormItem prop="username">
+                <Input type="text" v-model="formData.username" placeholder="Username" size="large" @on-enter="handleLogin">
+                <Icon type="ios-person-outline" slot="prepend"></Icon>
+                </Input>
+            </FormItem>
+            <FormItem prop="password">
+                <Input type="password" v-model="formData.password" placeholder="Password" size="large" @on-enter="handleLogin">
+                <Icon type="ios-key" slot="prepend"></Icon>
+                </Input>
+            </FormItem>
+        </Form>
+        <div class="footer">
+            <Button
+                type="primary"
+                @click="handleLogin"
+                :loading="loading"
+                class="button" long>
+                Login
+            </Button>
         </div>
     </div>
 </template>
 
 <script>
-import api from '../axios-api'
+import { mapActions, mapGetters } from 'vuex'
+import formMixin from '@/components/form.js'
+import api from '@/axios-api.js'
 export default {
-    name: 'login',
+    mixins: [formMixin],
     data () {
         return {
-            username: '',
-            password: '',
-            incorrectAuth: false
+            loading: false,
+            formData: {
+                username: '',
+                password: ''
+            },
+            ruleLogin: {
+                username: [
+                    {required: true, trigger: 'blur'},
+                ],
+                password: [
+                    {required: true, trigger: 'change', min:6, max: 30}
+                ]
+            }
         }
     },
+    computed: mapGetters(['redirect_path']),
     methods: {
-        login () {
-            // this.$store.dispatch('userLogin', {
-            //     username: this.username,
-            //     password: this.password
-            // })
-            // .then(() => {
-            //     api.createPost({
-            //         Authorization: `JWT ${this.$store.state.accessToken}`,
-            //         'X-Requested-With': 'XMLHttpRequest'
-            //     }, {
-            //         title: 'title',
-            //         content: 'content'
-            //     }).then(() => {
+        ...mapActions(['getProfile', 'changeModalStatus']),
+        handleLogin () {
+            this.validateForm('formLogin').then((valid) => {
+                this.loading = true
+                // let formData = Object.assgin({}, this.formData)
+                let formData = JSON.parse(JSON.stringify(this.formData))
 
-            //     })
-
-            //     this.$router.push({ name: 'posts' })
-            // })
-            // .catch(err => {
-            //     console.log(err)
-            //     this.incorrectAuth = true
-            // })
-            api.userLogin({
-                username: this.username,
-                password: this.password
-            })
-            .then(resp => {
-                console.log(resp)
-                this.$store.dispatch('login')
-                this.$router.push({ name: 'posts'})
-            })
-            .catch(resp => {
-                console.log(resp)
+                api.login(formData)
+                .then(res => {
+                    this.loading = false
+                    this.getProfile()
+                    this.$success("Welcome back to OnlineMemo")
+                    this.changeModalStatus({visible: false})
+                    this.cleanFrom('formLogin')
+                }, err => {
+                    this.loading = false
+                    this.$error("login failed")
+                })
             })
         }
-    },
+    }
+
 }
 </script>
 
-<style scoped>
-body {
-    background-color: #f4f4f4;
-}
-    .login {
-        background-color: #fff;
-        margin-top: 10%;
+<style scoped lang="less">
+  .footer {
+    overflow: auto;
+    margin-top: 20px;
+    margin-bottom: -15px;
+    text-align: left;
+    .button {
+        margin: 0 0 15px 0;
+        font-size: 14px;
     }
-    input {
-        padding: 25px 10px;
-    }
+  }
 </style>

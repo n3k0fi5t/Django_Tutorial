@@ -1,14 +1,18 @@
 <template>
-    <div class="logout">
+    <div>
     </div>
 </template>
 
 <script>
+import api from '@/axios-api.js'
+
 export default {
-    created () {
-        this.$store.dispatch('userLogout')
-        .then(() => {
-            this.$router.push({ name: 'login' })
+    mounted () {
+        api.logout().then(res => {
+            this.$store.dispatch('clearProfile')
+            this.$router.replace({
+                path: '/'
+            })
         })
     }
 }

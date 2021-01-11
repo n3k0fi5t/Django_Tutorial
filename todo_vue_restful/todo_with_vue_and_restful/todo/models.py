@@ -10,7 +10,7 @@ class TodoItem(models.Model):
     content = models.TextField()
 
     create_time = models.DateTimeField(auto_now_add=True)
-    finish_time = models.DateTimeField()
+    finish_time = models.DateTimeField(null=True, blank=True)
     is_finished = models.BooleanField(default=False)
 
     def __str__(self):

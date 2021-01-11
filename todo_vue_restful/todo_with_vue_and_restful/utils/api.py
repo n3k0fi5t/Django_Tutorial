@@ -168,6 +168,6 @@ def paginate_data(request, qs, serializer):
 
     data = {
         "results": results,
-        "count": count,
+        "total": count,
     }
     return data

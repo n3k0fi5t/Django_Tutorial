@@ -1,12 +1,14 @@
 from http import HTTPStatus
 
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Q
 
 from utils.api import APIView, validate_serializer
+
+from account.permissions import login_required
 
 from .models import User, UserProfile
 

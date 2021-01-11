@@ -27,10 +27,9 @@
 </template>
 
 <script>
-import Navbar from '../components/Navabar'
+import Navbar from '../components/Navbar'
 //import { getAPI } from '../axios-api'
 // import { getAPI } from '../axios-api'
-import api from '../axios-api'
 export default {
     name: 'Posts',
     data () {
@@ -57,19 +56,19 @@ export default {
     //     })
     // }
 
-    created () {
-        // getAPI.get('/posts/', { headers: { Authorization: `JWT ${this.$store.state.accessToken}` }})
-        api.getPostList({
-            'X-Requested-With': 'XMLHttpRequest'
-        })
-        .then(response => {
-            console.log('Post API has recieved data')
-            console.log(response.data)
-            this.APIData = response.data
-        })
-        .catch(err => {
-            console.log(err)
-        })
-    }
+    // created () {
+    //     // getAPI.get('/posts/', { headers: { Authorization: `JWT ${this.$store.state.accessToken}` }})
+    //     api.getPostList({
+    //         'X-Requested-With': 'XMLHttpRequest'
+    //     })
+    //     .then(response => {
+    //         console.log('Post API has recieved data')
+    //         console.log(response.data)
+    //         this.APIData = response.data
+    //     })
+    //     .catch(err => {
+    //         console.log(err)
+    //     })
+    // }
 }
 </script>

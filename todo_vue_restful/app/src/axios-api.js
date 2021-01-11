@@ -1,37 +1,51 @@
 import axios from 'axios'
 import Vue from 'vue'
 
+import store from '@/store'
+
 Vue.prototype.$http = axios
-// axios.defaults.baseURL = 'http://127.0.0.1:5001/api'
 axios.defaults.baseURL = '/api'
-// axios.defaults.baseURL = 'http://0.0.0.0:8081'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.xsrfCookieName = 'csrftoken'
-const getAPI = axios.create({
-    baseURL: 'http://127.0.0.1:5001',
-    timeout: 1000,
-})
-
-// const getAPI = ajax({
-//     url: 'http://127.0.0.1:5001',
-//     method: 'get'
-// })
 
 export default {
-    getPostList (headers) {
-        return ajax('/posts/', 'get', {
-            headers
+    getTodoList (offset, limit) {
+        let params = {
+            offset,
+            limit,
+        }
+        return ajax('items/', 'get', {
+            params
         })
     },
-    createPost (headers, data) {
-        return ajax('/posts/', 'post', {
-            headers,
+    updateItem(params, data) {
+        return ajax('items/', 'put', {
+            params,
             data
         })
     },
-    userLogin (data) {
-        return ajax('/account/login/', 'post', {
+    getUserInfo () {
+        return ajax('profile/', 'get')
+    },
+    login (data) {
+        return ajax('login/', 'post', {
             data
+        })
+    },
+    logout () {
+        return ajax('logout/', 'get')
+    },
+    register (data) {
+        return ajax('register/', 'post', {
+            data
+        })
+    },
+    checkUsernameOrEmail (username, email) {
+        return ajax('check_username_or_email/', 'post', {
+            data: {
+                username,
+                email
+            }
         })
     }
 }
@@ -44,6 +58,7 @@ function ajax(url, method, options) {
         params = data = {}
         headers = default_headers
     }
+    console.log(params)
     return new Promise((resolve, reject) => {
         axios({
             url,
@@ -51,18 +66,19 @@ function ajax(url, method, options) {
             headers,
             params,
             data
-        }).then(resp => {
-            // if (resp.data.error !== null) {
-            //     console.log(resp.data.error)
-            //     reject(resp)
-            // } else {
-            //     resolve(resp)
-            // }
-            resolve(resp)
-        }, resp => {
-            reject(resp)
+        }).then(res => {
+            resolve(res)
+        }, error => {
+            if (error.response && error.response.status === 401) {
+                // clear profile and pop up login form
+                Vue.prototype.$error("Please login first")
+                store.dispatch('clearProfile')
+                store.dispatch('changeModalStatus', {
+                    mode: 'login',
+                    visible: true
+                })
+            }
+            reject(error)
         })
     })
 }
-
-export { getAPI }
